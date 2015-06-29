@@ -74,6 +74,37 @@ Vagrant.configure("2") do |config|
 
         # If using Fusion or Workstation
         #box.vm.provider :vmware_fusion or box.vm.provider :vmware_workstation do |v|
+        box.vm.provider :vmware_fusion do |v|
+          v.vmx["memsize"] = 1024
+          if prefix == "controller" 
+            v.vmx["memsize"] = 2048
+            v.vmx["numvcpus"] = "1"
+          end
+
+          if prefix == "swift" 
+            v.vmx["memsize"] = 2048
+            v.vmx["numvcpus"] = "1"
+
+	    vdiskmanager = '/Applications/VMware\ Fusion.app/Contents/Library/vmware-vdiskmanager'
+ 
+            dir = "#{ENV['HOME']}/vagrant-additional-disk"
+ 
+            unless File.directory?( dir )
+                Dir.mkdir dir
+            end
+ 
+            file_to_disk = "#{dir}/#{hostname}-sdb.vmdk"
+ 
+            unless File.exists?( file_to_disk )
+                `#{vdiskmanager} -c -s 20GB -a lsilogic -t 1 #{file_to_disk}`
+            end
+ 
+            v.vmx['scsi0:1.filename'] = file_to_disk
+            v.vmx['scsi0:1.present']  = 'TRUE'
+            v.vmx['scsi0:1.redo']     = ''
+	  end
+        end
+
         box.vm.provider :vmware_workstation do |v|
           v.vmx["memsize"] = 1024
           if prefix == "controller" 
@@ -85,7 +116,6 @@ Vagrant.configure("2") do |config|
             v.vmx["memsize"] = 2048
             v.vmx["numvcpus"] = "1"
 
-	    #vdiskmanager = '/Applications/VMware\ Fusion.app/Contents/Library/vmware-vdiskmanager'
 	    vdiskmanager = '/usr/bin/vmware-vdiskmanager'
  
             dir = "#{ENV['HOME']}/vagrant-additional-disk"
@@ -111,12 +141,28 @@ Vagrant.configure("2") do |config|
           # Defaults
           vbox.customize ["modifyvm", :id, "--memory", 1024]
           vbox.customize ["modifyvm", :id, "--cpus", 1]
-          if prefix == "compute" or prefix == "controller" or prefix == "swift"
-            vbox.customize ["modifyvm", :id, "--memory", 3172]
-            vbox.customize ["modifyvm", :id, "--cpus", 2]
+          if prefix == "controller"
+            vbox.customize ["modifyvm", :id, "--memory", 2048]
+            vbox.customize ["modifyvm", :id, "--cpus", 1]
           end
-          vbox.customize ["modifyvm", :id, "--nicpromisc3", "allow-all"]
-          vbox.customize ["modifyvm", :id, "--nicpromisc4", "allow-all"]
+
+          if prefix == "controller"
+            vbox.customize ["modifyvm", :id, "--memory", 2048]
+            vbox.customize ["modifyvm", :id, "--cpus", 1]
+
+            dir = "#{ENV['HOME']}/vagrant-additional-disk"
+ 
+            unless File.directory?( dir )
+                Dir.mkdir dir
+            end
+ 
+            file_to_disk = "#{dir}/#{hostname}-sdb.vmdk"
+ 
+            unless File.exists?( file_to_disk )
+    		vbox.customize ['createhd', '--filename', file_to_disk, '--size', 20 * 1024]
+            end
+  	    vbox.customize ['storageattach', :id, '--storagectl', 'SATA Controller', '--port', 1, '--device', 0, '--type', 'hdd', '--medium', file_to_disk]
+  	  end
         end
       end
     end

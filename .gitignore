@@ -1,0 +1,13 @@
+.vagrant/
+cirros-0.3.0-x86_64-disk.img
+id_rsa
+id_rsa.pub
+trusty-server-cloudimg-amd64-disk1.img
+demokey
+packer_cache/
+*.box
+*.pub
+*.pem
+cinder.2nd_edition
+cinder.ini
+apt-cacher-ng/

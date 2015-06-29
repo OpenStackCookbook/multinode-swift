@@ -4,11 +4,6 @@
 # Uncomment the next line to force use of VirtualBox provider when Fusion provider is present
 # ENV['VAGRANT_DEFAULT_PROVIDER'] = 'virtualbox'
 
-
-# @@@@@@@@@@@@      WARNING!     @@@@@@@@@@
-# Currently only works for VMware Workstation on Linux. Sorry.
-#
-
 nodes = {
     'controller'  => [1, 200],
     'swift'  => [5, 221],
@@ -161,7 +156,7 @@ Vagrant.configure("2") do |config|
             unless File.exists?( file_to_disk )
     		vbox.customize ['createhd', '--filename', file_to_disk, '--size', 20 * 1024]
             end
-  	    vbox.customize ['storageattach', :id, '--storagectl', 'SATA Controller', '--port', 1, '--device', 0, '--type', 'hdd', '--medium', file_to_disk]
+  	    vbox.customize ['storageattach', :id, '--storagectl', 'IDE Controller', '--port', 1, '--device', 0, '--type', 'hdd', '--medium', file_to_disk]
   	  end
         end
       end
